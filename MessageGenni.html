@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MessageGenni</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #111;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 720px;
+}
+
+#top-bar {
+  width: 100%;
+  background: #111;
+  border-bottom: 1px solid #222;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #007AFF 0%, #6B35DE 50%, #E8462A 100%);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(107,53,222,0.5);
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+.logo-text span {
+  background: linear-gradient(135deg, #007AFF, #6B35DE, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  margin-left: 2px;
+  align-self: flex-end;
+  margin-bottom: 3px;
+}
+
+#main-content {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  align-items: flex-start;
+}
+
+/* ─── CONTROLS ─── */
+#controls {
+  width: 265px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+}
+#controls::-webkit-scrollbar { width: 3px; }
+#controls::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.panel {
+  background: #1c1c1c;
+  border-radius: 10px;
+  padding: 11px 12px;
+  border: 1px solid #272727;
+}
+.panel h3 {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  margin-bottom: 9px;
+}
+.cr { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 6px; }
+.cr label { font-size: 12px; color: #999; flex-shrink: 0; }
+.cr input[type="text"], .cr input[type="number"] {
+  background: #252525; border: 1px solid #303030; border-radius: 6px;
+  color: #eee; font-size: 12px; padding: 5px 7px; flex: 1; min-width: 0; font-family: inherit;
+}
+
+.plat-tabs { display: flex; gap: 5px; }
+.ptab {
+  flex: 1; padding: 7px 4px; border-radius: 7px; border: 1.5px solid #303030;
+  font-size: 11px; font-weight: 600; cursor: pointer; background: #252525; color: #555;
+  transition: all 0.15s; font-family: inherit;
+}
+.ptab.ai { background: #007AFF; border-color: #007AFF; color: #fff; }
+.ptab.ah { background: #6B2D8B; border-color: #6B2D8B; color: #fff; }
+.ptab.aig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); border-color: #cc2366; color: #fff; }
+
+.tog-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.tog-row label { font-size: 12px; color: #999; }
+.tog {
+  width: 36px; height: 20px; background: #303030; border-radius: 10px;
+  position: relative; cursor: pointer; border: none; transition: background 0.2s; flex-shrink: 0;
+}
+.tog.on { background: #007AFF; }
+.tog::after {
+  content: ''; position: absolute; width: 16px; height: 16px; background: #fff;
+  border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.tog.on::after { transform: translateX(16px); }
+
+.bb-btns { display: flex; gap: 5px; margin-top: 5px; }
+.bb {
+  flex: 1; padding: 5px 4px; border-radius: 6px; border: 1.5px solid #303030;
+  font-size: 11px; font-weight: 600; cursor: pointer; background: #252525; color: #555;
+  font-family: inherit; transition: all 0.15s;
+}
+.bb.ab { background: #007AFF; border-color: #007AFF; color: #fff; }
+.bb.ag { background: #34C759; border-color: #34C759; color: #fff; }
+
+.av-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.av-ctrl {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(145deg, #7b6aa8, #5a4a8e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
+  overflow: hidden; cursor: pointer; position: relative;
+}
+.av-ctrl .av-hint {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; opacity: 0; border-radius: 50%; transition: opacity 0.15s;
+}
+.av-ctrl:hover .av-hint { opacity: 1; }
+#av-file { display: none; }
+.av-info { font-size: 11px; color: #555; line-height: 1.5; }
+
+#msg-input {
+  width: 100%; background: #252525; border: 1px solid #303030; border-radius: 7px;
+  color: #eee; font-size: 12px; padding: 7px 8px; resize: vertical;
+  min-height: 48px; font-family: inherit; margin-bottom: 6px;
+}
+.s-btns, .r-btns { display: flex; gap: 4px; margin-bottom: 6px; }
+.sbt, .rbt {
+  flex: 1; padding: 6px 4px; border-radius: 6px; border: 1.5px solid #303030;
+  font-size: 11px; font-weight: 600; cursor: pointer; background: #252525; color: #555;
+  font-family: inherit; transition: all 0.15s;
+}
+.sbt.on { background: #007AFF; border-color: #007AFF; color: #fff; }
+.rbt.on { background: #333; border-color: #666; color: #eee; }
+
+.ts-row { display: flex; gap: 5px; align-items: center; margin-bottom: 6px; }
+.ts-row label { font-size: 11px; color: #555; flex-shrink: 0; }
+.ts-row input {
+  flex: 1; background: #252525; border: 1px solid #303030; border-radius: 6px;
+  color: #eee; font-size: 11px; padding: 5px 6px; font-family: inherit;
+}
+
+.add-btn {
+  width: 100%; background: #007AFF; color: #fff; border: none; border-radius: 7px;
+  padding: 9px; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: opacity 0.15s;
+}
+.add-btn:hover { opacity: 0.85; }
+.add-btn.hn { background: #6B2D8B; }
+
+#msg-list { display: flex; flex-direction: column; gap: 3px; max-height: 180px; overflow-y: auto; }
+#msg-list::-webkit-scrollbar { width: 3px; }
+#msg-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+.mli { display: flex; align-items: center; gap: 5px; padding: 5px 7px; background: #222; border-radius: 6px; border: 1px solid #2a2a2a; }
+.mli-w { font-size: 9px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; width: 22px; }
+.mli-w.y { color: #007AFF; }
+.mli-w.h { color: #888; }
+.mli-t { font-size: 11px; color: #aaa; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mli-x { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 13px; padding: 0 2px; opacity: 0.6; transition: opacity 0.15s; flex-shrink: 0; }
+.mli-x:hover { opacity: 1; }
+
+.exp-btn {
+  width: 100%; background: #1c1c1c; color: #007AFF; border: 1.5px solid #007AFF;
+  border-radius: 7px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: all 0.15s; margin-bottom: 5px;
+}
+.exp-btn:hover { background: #007AFF; color: #fff; }
+.exp-btn.hn { color: #6B2D8B; border-color: #6B2D8B; }
+.exp-btn.hn:hover { background: #6B2D8B; color: #fff; }
+.clr-btn {
+  width: 100%; background: #1c1c1c; color: #ff3b30; border: 1.5px solid #ff3b30;
+  border-radius: 7px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: all 0.15s;
+}
+.clr-btn:hover { background: #ff3b30; color: #fff; }
+.rr { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; }
+.rr input {
+  width: 48px; background: #252525; border: 1px solid #303030; border-radius: 6px;
+  color: #eee; font-size: 11px; padding: 4px 5px; text-align: center; font-family: inherit;
+}
+.rr label, .rr span { font-size: 11px; color: #555; }
+
+/* ─── PREVIEW ─── */
+#preview-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+#ip, #hp {
+  flex-shrink: 0;
+}
+
+/* ════════ iMESSAGE ════════ */
+#ip { width: 390px; background: #fff; display: flex; flex-direction: column; min-height: 780px; }
+#ip.dk { background: #000; }
+
+#ism-sb {
+  height: 50px; background: inherit; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 18px 0 22px; flex-shrink: 0;
+}
+#ism-t { font-size: 16px; font-weight: 700; letter-spacing: -0.4px; color: #000; }
+#ip.dk #ism-t { color: #fff; }
+.isb-ic { display: flex; align-items: center; gap: 6px; }
+
+#ism-hdr {
+  height: 96px; background: rgba(255,255,255,0.94); backdrop-filter: blur(20px);
+  display: flex; align-items: center; padding: 0 14px 0 6px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.14); flex-shrink: 0; gap: 0;
+  padding-bottom: 8px;
+}
+#ip.dk #ism-hdr { background: rgba(18,18,18,0.97); border-bottom-color: rgba(255,255,255,0.09); }
+.ism-back {
+  display: flex; align-items: center; flex-shrink: 0; padding-right: 4px;
+}
+.ism-back-pill {
+  display: flex; align-items: center; gap: 5px;
+  background: #fff; border-radius: 20px;
+  padding: 6px 10px 6px 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  height: 32px;
+}
+#ip.dk .ism-back-pill { background: #2c2c2e; box-shadow: none; }
+.ism-back-num {
+  width: 20px; height: 20px; background: #1c1c1e; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+#ip.dk .ism-back-num { background: #636366; }
+.ism-hc { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+#ism-av {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: linear-gradient(145deg, #8878bb, #6a5a9e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 600; color: #fff; overflow: hidden; flex-shrink: 0; position: relative;
+}
+.ism-nr { display: flex; align-items: center; gap: 2px; }
+#ism-nm { font-size: 13px; font-weight: 600; color: #000; }
+#ip.dk #ism-nm { color: #fff; }
+.ism-hr {
+  width: 34px; height: 34px; background: #e8e8e8; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+#ip.dk .ism-hr { background: #2c2c2e; }
+
+#ism-msgs {
+  flex: 1; padding: 6px 0 6px; background: inherit;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.ism-ts { text-align: center; font-size: 12px; color: #8e8e93; margin: 12px 0 3px; }
+.ism-row { display: flex; flex-direction: column; padding: 0 8px; margin-bottom: 1px; }
+.ism-row.s { align-items: flex-end; }
+.ism-row.r { align-items: flex-start; }
+.ism-b {
+  max-width: 75%; padding: 10px 14px; font-size: 17px; line-height: 1.35;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; word-break: break-word;
+}
+.ism-b.sb { background: #007AFF; color: #fff; border-radius: 18px 18px 4px 18px; }
+.ism-b.sg { background: #34C759; color: #fff; border-radius: 18px 18px 4px 18px; }
+.ism-b.rb { background: #e9e9eb; color: #000; border-radius: 18px 18px 18px 4px; }
+#ip.dk .ism-b.rb { background: #3a3a3c; color: #fff; }
+.ism-b.sb.g, .ism-b.sg.g { border-radius: 18px; margin-bottom: 1px; }
+.ism-b.rb.g { border-radius: 18px; margin-bottom: 1px; }
+.ism-rc { font-size: 11px; color: #8e8e93; margin-top: 2px; margin-right: 5px; }
+
+#ism-typing { padding: 2px 8px 4px; display: none; }
+.ism-tb {
+  background: #e9e9eb; border-radius: 18px 18px 18px 4px;
+  padding: 10px 14px; display: inline-flex; align-items: center; gap: 4px; height: 38px;
+}
+#ip.dk .ism-tb { background: #3a3a3c; }
+.td { width: 8px; height: 8px; background: #8e8e93; border-radius: 50%; animation: tpa 1.2s ease-in-out infinite; }
+.td:nth-child(2) { animation-delay: 0.2s; }
+.td:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tpa { 0%,60%,100%{transform:scale(1);opacity:0.4;}30%{transform:scale(1.35);opacity:1;} }
+
+#ism-ib {
+  height: 54px; background: inherit; border-top: 0.5px solid rgba(0,0,0,0.13);
+  display: flex; align-items: center; padding: 0 8px; gap: 7px; flex-shrink: 0;
+}
+#ip.dk #ism-ib { border-top-color: rgba(255,255,255,0.1); }
+.ism-if {
+  flex: 1; height: 34px; background: #fff; border: 1px solid #c7c7cc;
+  border-radius: 17px; display: flex; align-items: center; padding: 0 13px;
+}
+#ip.dk .ism-if { background: #2c2c2e; border-color: #3a3a3c; }
+.ism-ph { font-size: 16px; color: #c7c7cc; }
+#ip.dk .ism-ph { color: #48484a; }
+
+.home-ind {
+  height: 26px; background: inherit; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
+}
+.home-bar { width: 130px; height: 5px; background: #000; border-radius: 3px; opacity: 0.15; }
+#ip.dk .home-bar { background: #fff; opacity: 0.25; }
+
+/* ════════ HINGE ════════ */
+#hp { width: 390px; background: #f5f5f5; display: flex; flex-direction: column; min-height: 780px; }
+
+#hng-sb {
+  height: 50px; background: #fff; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 18px 0 22px; flex-shrink: 0;
+}
+#hng-t { font-size: 16px; font-weight: 700; letter-spacing: -0.4px; color: #000; }
+.hsb-ic { display: flex; align-items: center; gap: 6px; }
+
+#hng-hdr {
+  height: 54px; background: #fff; display: flex; align-items: center;
+  padding: 0 18px; gap: 0; border-bottom: 1px solid #ededed; flex-shrink: 0;
+}
+.hng-back { display: flex; align-items: center; margin-right: 12px; flex-shrink: 0; }
+#hng-nm { font-size: 20px; font-weight: 700; color: #000; flex: 1; letter-spacing: -0.3px; }
+.hng-hdr-icons { display: flex; align-items: center; gap: 20px; }
+
+#hng-tabs {
+  height: 44px; background: #fff; display: flex; align-items: stretch;
+  border-bottom: 1px solid #ededed; flex-shrink: 0;
+}
+.hng-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 500; color: #bbb; position: relative; cursor: default;
+}
+.hng-tab.active { color: #6B2D8B; font-weight: 600; }
+.hng-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 20%; right: 20%;
+  height: 2px; background: #6B2D8B; border-radius: 2px 2px 0 0;
+}
+.hng-tab-div { width: 1px; background: #ededed; margin: 12px 0; }
+
+#hng-msgs {
+  flex: 1; padding: 10px 0 6px; background: #f5f5f5;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.hng-ts { text-align: center; font-size: 12px; color: #bbb; margin: 8px 0 5px; font-weight: 400; }
+
+.hng-row { display: flex; flex-direction: column; padding: 0 14px; margin-bottom: 3px; }
+.hng-row.s { align-items: flex-end; }
+.hng-row.r { align-items: flex-start; }
+
+.hng-recv-wrap { display: flex; align-items: flex-end; gap: 7px; max-width: 80%; }
+.hng-rav {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(145deg, #c0a0d0, #8060a0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; overflow: hidden; position: relative;
+}
+.hng-rav.hid { visibility: hidden; }
+
+.hng-b {
+  padding: 10px 14px; font-size: 16px; line-height: 1.4;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; word-break: break-word;
+}
+.hng-b.s { background: #6B2D8B; color: #fff; border-radius: 20px 20px 4px 20px; max-width: 72%; }
+.hng-b.r { background: #e8e8e8; color: #000; border-radius: 20px 20px 20px 4px; max-width: 100%; }
+.hng-b.s.g { border-radius: 20px; margin-bottom: 2px; }
+.hng-b.r.g { border-radius: 20px; margin-bottom: 2px; }
+
+#hng-typing { padding: 0 14px 6px; display: none; }
+.hng-typ-av {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(145deg, #c0a0d0, #8060a0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; overflow: hidden; position: relative;
+}
+.hng-tb {
+  background: #e8e8e8; border-radius: 20px 20px 20px 4px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 4px; height: 40px;
+}
+.htd { width: 7px; height: 7px; background: #bbb; border-radius: 50%; animation: tpa 1.2s ease-in-out infinite; }
+.htd:nth-child(2) { animation-delay: 0.2s; }
+.htd:nth-child(3) { animation-delay: 0.4s; }
+
+#hng-ib {
+  height: 62px; background: #fff; border-top: 1px solid #ededed;
+  display: flex; align-items: center; padding: 0 14px; gap: 10px; flex-shrink: 0;
+}
+.hng-if {
+  flex: 1; height: 42px; background: #f5f5f5; border-radius: 22px;
+  border: 1px solid #e5e5e5; display: flex; align-items: center; padding: 0 16px;
+}
+.hng-ph { font-size: 16px; color: #c0c0c0; }
+.hng-mic {
+  width: 38px; height: 38px; background: #f0f0f0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.hng-home-bar { width: 130px; height: 5px; background: #000; border-radius: 3px; opacity: 0.12; }
+.hng-home { height: 26px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+/* ════════ INSTAGRAM ════════ */
+#igp { width: 390px; background: #fff; display: flex; flex-direction: column; min-height: 780px; }
+
+#ig-sb {
+  height: 50px; background: #fff; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 18px 0 22px; flex-shrink: 0;
+}
+#ig-t { font-size: 16px; font-weight: 700; letter-spacing: -0.4px; color: #000; }
+.igsb-ic { display: flex; align-items: center; gap: 6px; }
+
+#ig-hdr {
+  height: 64px; background: #fff; display: flex; align-items: center;
+  padding: 0 14px 0 10px; gap: 8px; border-bottom: 0.5px solid #efefef; flex-shrink: 0;
+}
+.ig-back { display: flex; align-items: center; flex-shrink: 0; padding-right: 2px; }
+#ig-av {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(145deg, #8878bb, #6a5a9e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 600; color: #fff;
+  overflow: hidden; flex-shrink: 0; position: relative;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #c0c0c0;
+}
+.ig-hdr-info { flex: 1; display: flex; flex-direction: column; gap: 0px; min-width: 0; }
+.ig-nm-row { display: flex; align-items: center; gap: 3px; }
+#ig-nm { font-size: 15px; font-weight: 700; color: #000; }
+.ig-nm-chev { color: #000; font-size: 13px; font-weight: 400; }
+#ig-sub { font-size: 12px; color: #737373; font-weight: 400; }
+.ig-hdr-icons { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+
+#ig-msgs {
+  flex: 1; padding: 4px 0 4px; background: #fff;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.ig-ts { text-align: center; font-size: 11px; color: #8e8e8e; margin: 10px 0 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+
+.ig-row { display: flex; flex-direction: column; padding: 0 12px; margin-bottom: 2px; }
+.ig-row.s { align-items: flex-end; }
+.ig-row.r { align-items: flex-start; }
+
+.ig-recv-wrap { display: flex; align-items: flex-end; gap: 7px; max-width: 78%; }
+.ig-rav {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(145deg, #8878bb, #6a5a9e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; overflow: hidden; position: relative;
+}
+.ig-rav.hid { visibility: hidden; }
+
+.ig-b {
+  padding: 10px 15px; font-size: 15px; line-height: 1.4;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; word-break: break-word;
+}
+.ig-b.s {
+  background: #6B35DE;
+  color: #fff; border-radius: 22px 22px 4px 22px; max-width: 72%;
+}
+.ig-b.r {
+  background: #fff; color: #000; border-radius: 22px 22px 22px 4px;
+  border: 1.5px solid #e0e0e0; max-width: 100%;
+}
+.ig-b.s.g { border-radius: 22px; margin-bottom: 1px; }
+.ig-b.r.g { border-radius: 22px; margin-bottom: 1px; }
+.ig-rc { font-size: 11px; color: #8e8e8e; margin-top: 3px; margin-right: 4px; text-align: right; }
+
+#ig-typing { padding: 4px 12px 4px; display: none; }
+.ig-typing-wrap { display: flex; align-items: flex-end; gap: 7px; }
+.ig-typ-av {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(145deg, #8878bb, #6a5a9e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; overflow: hidden; position: relative;
+}
+.ig-tb {
+  background: #fff; border: 1.5px solid #e0e0e0; border-radius: 22px 22px 22px 4px;
+  padding: 10px 16px; display: inline-flex; align-items: center; gap: 5px; height: 42px;
+}
+.igd { width: 7px; height: 7px; background: #bbb; border-radius: 50%; animation: tpa 1.2s ease-in-out infinite; }
+.igd:nth-child(2) { animation-delay: 0.2s; }
+.igd:nth-child(3) { animation-delay: 0.4s; }
+
+#ig-ib {
+  height: 70px; background: #fff; border-top: 0.5px solid #efefef;
+  display: flex; align-items: center; padding: 0 16px 0 12px; gap: 10px; flex-shrink: 0;
+}
+.ig-cam-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: #5B30D9;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ig-if {
+  flex: 1; height: 44px; background: #f5f5f5; border-radius: 22px;
+  display: flex; align-items: center; padding: 0 16px;
+}
+.ig-ph { font-size: 15px; color: #bbb; }
+.ig-ib-icons { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+.ig-home { height: 26px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ig-home-bar { width: 130px; height: 5px; background: #000; border-radius: 3px; opacity: 0.1; }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div class="logo-icon">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M3 6C3 4.9 3.9 4 5 4H17C18.1 4 19 4.9 19 6V13C19 14.1 18.1 15 17 15H13L11 18L9 15H5C3.9 15 3 14.1 3 13V6Z" fill="white" opacity="0.95"/>
+      <circle cx="7.5" cy="9.5" r="1.2" fill="#6B35DE"/>
+      <circle cx="11" cy="9.5" r="1.2" fill="#6B35DE"/>
+      <circle cx="14.5" cy="9.5" r="1.2" fill="#6B35DE"/>
+    </svg>
+  </div>
+  <div style="display:flex;align-items:baseline;gap:6px;">
+    <div class="logo-text">Message<span>Genni</span></div>
+    <div class="logo-badge">by AuraBet</div>
+  </div>
+</div>
+
+<div id="main-content">
+
+<!-- CONTROLS -->
+<div id="controls">
+
+  <div class="panel">
+    <h3>Platform</h3>
+    <div class="plat-tabs">
+      <button class="ptab ai" id="pt-i" onclick="setPlatform('i')">iMessage</button>
+      <button class="ptab" id="pt-h" onclick="setPlatform('h')">Hinge</button>
+      <button class="ptab" id="pt-ig" onclick="setPlatform('ig')">Instagram</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Status Bar</h3>
+    <div class="cr"><label>Time</label><input type="text" id="sb-t" value="9:41" maxlength="5" oninput="updateUI()"></div>
+    <div class="cr"><label>Battery %</label><input type="number" id="sb-b" value="80" min="0" max="100" oninput="updateUI()"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Chat Settings</h3>
+    <div class="cr"><label>Name</label><input type="text" id="c-nm" value="Nick" maxlength="20" oninput="updateUI()"></div>
+    <div class="cr" id="ig-username-row" style="display:none;"><label>Status</label><input type="text" id="c-user" value="Active now" maxlength="30" oninput="updateUI()"></div>
+    <div class="av-row">
+      <div class="av-ctrl" id="av-ctrl" onclick="document.getElementById('av-file').click()">
+        <span id="av-init">N</span>
+        <div class="av-hint">📷</div>
+      </div>
+      <input type="file" id="av-file" accept="image/*" onchange="handleAvatar(event)">
+      <div class="av-info">Click to upload<br>contact photo</div>
+    </div>
+    <div id="imsg-extras">
+      <div class="tog-row">
+        <label>Dark Mode</label>
+        <button class="tog" id="dk-tog" onclick="toggleDark()"></button>
+      </div>
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;">Bubble Color</div>
+      <div class="bb-btns">
+        <button class="bb ab" id="bb-bl" onclick="setBubble('b')">Blue</button>
+        <button class="bb" id="bb-gr" onclick="setBubble('g')">Green</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Add Message</h3>
+    <textarea id="msg-input" placeholder="Type message..."></textarea>
+    <div class="s-btns">
+      <button class="sbt on" id="sb-you" onclick="setSender('y')">YOU</button>
+      <button class="sbt" id="sb-her" onclick="setSender('h')">HER</button>
+    </div>
+    <div id="rcpt-wrap">
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;">Receipt</div>
+      <div class="r-btns">
+        <button class="rbt on" id="rb-n" onclick="setReceipt('n')">None</button>
+        <button class="rbt" id="rb-d" onclick="setReceipt('d')">Delivered</button>
+        <button class="rbt" id="rb-r" onclick="setReceipt('r')">Read</button>
+      </div>
+    </div>
+    <div class="ts-row" style="margin-top:6px;">
+      <label>Timestamp</label>
+      <input type="text" id="ts-in" placeholder="e.g. Today 5:23 PM">
+    </div>
+    <button class="add-btn" id="add-btn" onclick="addMsg()">+ Add Message</button>
+  </div>
+
+  <div class="panel">
+    <h3>Typing Indicator</h3>
+    <div class="tog-row" style="margin-bottom:0;">
+      <label>Show Typing</label>
+      <button class="tog" id="typ-tog" onclick="toggleTyping()"></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Messages (<span id="mc">0</span>)</h3>
+    <div id="msg-list"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Export</h3>
+    <button class="exp-btn" id="exp-full" onclick="exportFull()">⬇ Export Full PNG</button>
+    <div class="rr">
+      <label>Msgs</label>
+      <input type="number" id="rf" placeholder="1" min="1">
+      <span>to</span>
+      <input type="number" id="rt" placeholder="end" min="1">
+    </div>
+    <button class="exp-btn" id="exp-rng" onclick="exportRange()">⬇ Export Range PNG</button>
+    <button class="clr-btn" onclick="clearAll()">✕ Clear All</button>
+  </div>
+
+</div>
+
+<!-- PREVIEW -->
+<div id="preview-wrap">
+
+  <!-- iMESSAGE -->
+  <div id="ip" style="display:flex;">
+    <div id="ism-sb">
+      <span id="ism-t">9:41</span>
+      <div class="isb-ic">
+        <svg width="19" height="13" viewBox="0 0 19 13" fill="none" id="ism-sig">
+          <rect x="0" y="9" width="3.5" height="4" rx="1" fill="#000"/>
+          <rect x="5" y="6" width="3.5" height="7" rx="1" fill="#000"/>
+          <rect x="10" y="3" width="3.5" height="10" rx="1" fill="#000"/>
+          <rect x="15" y="0" width="3.5" height="13" rx="1" fill="#000"/>
+        </svg>
+        <svg width="17" height="13" viewBox="0 0 17 13" fill="none" id="ism-wif">
+          <path d="M1.5 5.5C4.2 2.5 12.8 2.5 15.5 5.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M3.8 8C5.5 6.2 11.5 6.2 13.2 8" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M6.2 10.5C7.2 9.2 9.8 9.2 10.8 10.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <circle cx="8.5" cy="12.5" r="1.2" fill="#000"/>
+        </svg>
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" id="ism-bat">
+          <rect x="0.75" y="0.75" width="23.5" height="12.5" rx="3.5" stroke="#000" stroke-width="1.5" fill="none"/>
+          <rect x="2.5" y="2.5" id="ism-bf" width="18" height="9" rx="2" fill="#000"/>
+          <rect x="25" y="4.5" width="2.5" height="5" rx="1.5" fill="#000"/>
+        </svg>
+      </div>
+    </div>
+    <div id="ism-hdr">
+      <!-- Back: white pill with chevron + count badge -->
+      <div class="ism-back">
+        <div class="ism-back-pill">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
+            <path d="M7.5 1.5L1.5 7.5L7.5 13.5" stroke="#007AFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="ism-back-num">5</div>
+        </div>
+      </div>
+      <!-- Center: avatar + name -->
+      <div class="ism-hc">
+        <div id="ism-av"><span id="ism-av-i">N</span></div>
+        <div class="ism-nr">
+          <span id="ism-nm">Nick</span>
+          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" style="margin-left:2px;">
+            <path d="M1 1L5 5L1 9" stroke="#007AFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Right: video button in circle -->
+      <div class="ism-hr">
+        <svg width="19" height="14" viewBox="0 0 19 14" fill="none">
+          <rect x="0.75" y="0.75" width="11.5" height="12.5" rx="2.5" stroke="#007AFF" stroke-width="1.5" fill="none"/>
+          <path d="M12.5 4.5L18 2V12L12.5 9.5" stroke="#007AFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <div id="ism-msgs">
+      <div id="ism-typing" style="padding: 2px 8px 4px; display:none;">
+        <div class="ism-tb"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+      </div>
+    </div>
+    <div id="ism-ib">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="11" r="10.25" stroke="#007AFF" stroke-width="1.5"/>
+        <path d="M11 6V16M6 11H16" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <div class="ism-if"><span class="ism-ph">iMessage</span></div>
+      <svg width="15" height="21" viewBox="0 0 15 21" fill="none">
+        <rect x="4" y="0.75" width="7" height="13" rx="3.5" stroke="#8e8e93" stroke-width="1.5" fill="none"/>
+        <path d="M1 10C1 14 3.8 17.3 7.5 17.3C11.2 17.3 14 14 14 10" stroke="#8e8e93" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <line x1="7.5" y1="17.3" x2="7.5" y2="20.5" stroke="#8e8e93" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="home-ind"><div class="home-bar"></div></div>
+  </div>
+
+  <!-- HINGE -->
+  <div id="hp" style="display:none;">
+    <div id="hng-sb">
+      <span id="hng-t">9:41</span>
+      <div class="hsb-ic">
+        <svg width="19" height="13" viewBox="0 0 19 13" fill="none">
+          <rect x="0" y="9" width="3.5" height="4" rx="1" fill="#000"/>
+          <rect x="5" y="6" width="3.5" height="7" rx="1" fill="#000"/>
+          <rect x="10" y="3" width="3.5" height="10" rx="1" fill="#000"/>
+          <rect x="15" y="0" width="3.5" height="13" rx="1" fill="#000"/>
+        </svg>
+        <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
+          <path d="M1.5 5.5C4.2 2.5 12.8 2.5 15.5 5.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M3.8 8C5.5 6.2 11.5 6.2 13.2 8" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M6.2 10.5C7.2 9.2 9.8 9.2 10.8 10.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <circle cx="8.5" cy="12.5" r="1.2" fill="#000"/>
+        </svg>
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none">
+          <rect x="0.75" y="0.75" width="23.5" height="12.5" rx="3.5" stroke="#000" stroke-width="1.5" fill="none"/>
+          <rect x="2.5" y="2.5" id="hng-bf" width="18" height="9" rx="2" fill="#000"/>
+          <rect x="25" y="4.5" width="2.5" height="5" rx="1.5" fill="#000"/>
+        </svg>
+      </div>
+    </div>
+    <div id="hng-hdr">
+      <div class="hng-back">
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+          <path d="M8 1.5L2 8L8 14.5" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span id="hng-nm">Nick</span>
+      <div class="hng-hdr-icons">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M2 2.5C2 1.95 2.45 1.5 3 1.5H5.5L6.8 5L5.3 5.9C5.9 7.2 7.2 8.5 8.5 9.1L9.4 7.6L12.9 8.9V11.4C12.9 11.95 12.45 12.4 11.9 12.4C6.4 12.4 2 8 2 2.5Z" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+          <rect x="0.75" y="0.75" width="13.5" height="14.5" rx="3" stroke="#222" stroke-width="1.5" fill="none"/>
+          <path d="M14.5 5L21 2V14L14.5 11" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg width="4" height="18" viewBox="0 0 4 18" fill="none">
+          <circle cx="2" cy="2" r="2" fill="#222"/>
+          <circle cx="2" cy="9" r="2" fill="#222"/>
+          <circle cx="2" cy="16" r="2" fill="#222"/>
+        </svg>
+      </div>
+    </div>
+    <div id="hng-tabs">
+      <div class="hng-tab active">Chat</div>
+      <div class="hng-tab-div"></div>
+      <div class="hng-tab">Profile</div>
+    </div>
+    <div id="hng-msgs">
+      <div id="hng-typing" style="padding: 4px 14px 2px; display:none;">
+        <div style="display:flex;align-items:flex-end;gap:7px;">
+          <div class="hng-typ-av" id="hng-typ-av"><span id="hng-typ-av-i">N</span></div>
+          <div class="hng-tb"><div class="htd"></div><div class="htd"></div><div class="htd"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="hng-ib">
+      <div class="hng-if"><span class="hng-ph">Message</span></div>
+      <div class="hng-mic">
+        <svg width="13" height="19" viewBox="0 0 13 19" fill="none">
+          <rect x="3.25" y="0.75" width="6.5" height="11.5" rx="3.25" stroke="#aaa" stroke-width="1.5" fill="none"/>
+          <path d="M1 9C1 12.31 3.46 15 6.5 15C9.54 15 12 12.31 12 9" stroke="#aaa" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <line x1="6.5" y1="15" x2="6.5" y2="18.5" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="hng-home"><div class="hng-home-bar"></div></div>
+  </div>
+
+  <!-- INSTAGRAM -->
+  <div id="igp" style="display:none;">
+    <div id="ig-sb">
+      <span id="ig-t">9:41</span>
+      <div class="igsb-ic">
+        <svg width="19" height="13" viewBox="0 0 19 13" fill="none">
+          <rect x="0" y="9" width="3.5" height="4" rx="1" fill="#000"/>
+          <rect x="5" y="6" width="3.5" height="7" rx="1" fill="#000"/>
+          <rect x="10" y="3" width="3.5" height="10" rx="1" fill="#000"/>
+          <rect x="15" y="0" width="3.5" height="13" rx="1" fill="#000"/>
+        </svg>
+        <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
+          <path d="M1.5 5.5C4.2 2.5 12.8 2.5 15.5 5.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M3.8 8C5.5 6.2 11.5 6.2 13.2 8" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M6.2 10.5C7.2 9.2 9.8 9.2 10.8 10.5" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <circle cx="8.5" cy="12.5" r="1.2" fill="#000"/>
+        </svg>
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none">
+          <rect x="0.75" y="0.75" width="23.5" height="12.5" rx="3.5" stroke="#000" stroke-width="1.5" fill="none"/>
+          <rect x="2.5" y="2.5" id="ig-bf" width="18" height="9" rx="2" fill="#000"/>
+          <rect x="25" y="4.5" width="2.5" height="5" rx="1.5" fill="#000"/>
+        </svg>
+      </div>
+    </div>
+    <div id="ig-hdr">
+      <div class="ig-back">
+        <svg width="10" height="17" viewBox="0 0 10 17" fill="none">
+          <path d="M8.5 1.5L1.5 8.5L8.5 15.5" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div id="ig-av"><span id="ig-av-i">N</span></div>
+      <div class="ig-hdr-info">
+        <div class="ig-nm-row">
+          <span id="ig-nm">Nick</span>
+          <span class="ig-nm-chev">›</span>
+        </div>
+        <span id="ig-sub">Active now</span>
+      </div>
+      <div class="ig-hdr-icons">
+        <!-- Sticker/add emoji icon -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <circle cx="13" cy="13" r="11.5" stroke="#000" stroke-width="1.8" fill="none"/>
+          <circle cx="9.5" cy="11" r="1.5" fill="#000"/>
+          <circle cx="16.5" cy="11" r="1.5" fill="#000"/>
+          <path d="M8.5 16C9.5 18.2 16.5 18.2 17.5 16" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M19 5L23 5M21 3L21 7" stroke="#000" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <!-- Phone -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <path d="M5 5C5 4.45 5.45 4 6 4H9L10.8 8.5L8.8 9.7C9.6 11.4 11.4 13.2 13.1 14L14.3 12L18.8 13.7V17C18.8 17.55 18.35 18 17.8 18C10.7 18 5 12.3 5 5Z" stroke="#000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <!-- Video -->
+        <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
+          <rect x="0.9" y="1.5" width="17" height="19" rx="3.5" stroke="#000" stroke-width="1.9" fill="none"/>
+          <path d="M18 7L27 4V18L18 15" stroke="#000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <div id="ig-msgs">
+      <div id="ig-typing" style="padding:4px 12px 4px;display:none;">
+        <div class="ig-typing-wrap">
+          <div class="ig-typ-av" id="ig-typ-av"><span id="ig-typ-av-i">N</span></div>
+          <div class="ig-tb"><div class="igd"></div><div class="igd"></div><div class="igd"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="ig-ib">
+      <div class="ig-cam-btn">
+        <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
+          <rect x="1" y="3.5" width="18" height="13.5" rx="3" stroke="#fff" stroke-width="1.6" fill="none"/>
+          <circle cx="10" cy="10.5" r="3.5" stroke="#fff" stroke-width="1.6" fill="none"/>
+          <rect x="6.5" y="1" width="7" height="3.5" rx="1.5" stroke="#fff" stroke-width="1.4" fill="none"/>
+        </svg>
+      </div>
+      <div class="ig-if"><span class="ig-ph">Message...</span></div>
+      <div class="ig-ib-icons">
+        <!-- Mic -->
+        <svg width="20" height="26" viewBox="0 0 20 26" fill="none">
+          <rect x="5.75" y="0.9" width="8.5" height="15" rx="4.25" stroke="#000" stroke-width="1.7" fill="none"/>
+          <path d="M1.5 12C1.5 17.25 5.4 21.5 10 21.5C14.6 21.5 18.5 17.25 18.5 12" stroke="#000" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+          <line x1="10" y1="21.5" x2="10" y2="25.5" stroke="#000" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <!-- Gallery -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="0.9" y="0.9" width="22.2" height="22.2" rx="4" stroke="#000" stroke-width="1.7" fill="none"/>
+          <circle cx="7.5" cy="7.5" r="2" fill="#000"/>
+          <path d="M1 16L7 10.5L11 14.5L15.5 10L23 17" stroke="#000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <!-- Sticker face -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 14.76 3.1 17.26 4.93 19.07L12 12L19.07 19.07C20.9 17.26 22 14.76 22 12C22 6.48 17.52 2 12 2Z" stroke="#000" stroke-width="1.7" fill="none"/>
+          <path d="M4.93 19.07C6.74 20.9 9.24 22 12 22C14.76 22 17.26 20.9 19.07 19.07L12 12L4.93 19.07Z" fill="#000" opacity="0.15"/>
+          <circle cx="8.5" cy="9.5" r="1.5" fill="#000"/>
+          <circle cx="15.5" cy="9.5" r="1.5" fill="#000"/>
+        </svg>
+        <!-- Plus -->
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="10.1" stroke="#000" stroke-width="1.7" fill="none"/>
+          <path d="M11 6V16M6 11H16" stroke="#000" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="ig-home"><div class="ig-home-bar"></div></div>
+  </div>
+
+</div>
+
+<script>
+let msgs = [], plat = 'i', isDark = false, bubble = 'b';
+let sender = 'y', receipt = 'n', typing = false;
+let mid = 0, avatarUrl = null;
+
+function setPlatform(p) {
+  plat = p;
+  document.getElementById('ip').style.display = p==='i' ? 'flex' : 'none';
+  document.getElementById('hp').style.display = p==='h' ? 'flex' : 'none';
+  document.getElementById('igp').style.display = p==='ig' ? 'flex' : 'none';
+  document.getElementById('pt-i').className = 'ptab' + (p==='i' ? ' ai' : '');
+  document.getElementById('pt-h').className = 'ptab' + (p==='h' ? ' ah' : '');
+  document.getElementById('pt-ig').className = 'ptab' + (p==='ig' ? ' aig' : '');
+  document.getElementById('imsg-extras').style.display = p==='i' ? 'block' : 'none';
+  document.getElementById('rcpt-wrap').style.display = p==='i' ? 'block' : 'none';
+  document.getElementById('ig-username-row').style.display = p==='ig' ? 'flex' : 'none';
+  document.getElementById('add-btn').className = 'add-btn' + (p==='h' ? ' hn' : '');
+  document.getElementById('exp-full').className = 'exp-btn' + (p==='h' ? ' hn' : '');
+  document.getElementById('exp-rng').className = 'exp-btn' + (p==='h' ? ' hn' : '');
+  msgs = []; mid = 0;
+  renderAll();
+}
+
+function handleAvatar(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => { avatarUrl = ev.target.result; updateUI(); };
+  r.readAsDataURL(f);
+}
+
+function setAvImg(wrapId, initId, ini, url) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const initEl = document.getElementById(initId);
+  if (initEl) initEl.textContent = ini;
+  let img = wrap.querySelector('img');
+  if (url) {
+    if (initEl) initEl.style.display = 'none';
+    if (!img) {
+      img = document.createElement('img');
+      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      wrap.appendChild(img);
+    }
+    img.src = url;
+  } else {
+    if (initEl) initEl.style.display = '';
+    if (img) img.remove();
+  }
+}
+
+function updateUI() {
+  const t = document.getElementById('sb-t').value;
+  const bat = parseInt(document.getElementById('sb-b').value) || 80;
+  const fw = Math.max(1, Math.round((bat/100)*18));
+  const name = document.getElementById('c-nm').value || 'Contact';
+  const ini = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  // iMessage
+  document.getElementById('ism-t').textContent = t;
+  document.getElementById('ism-bf').setAttribute('width', fw);
+  document.getElementById('ism-nm').textContent = name;
+  setAvImg('ism-av', 'ism-av-i', ini, avatarUrl);
+
+  // Hinge
+  document.getElementById('hng-t').textContent = t;
+  document.getElementById('hng-bf').setAttribute('width', fw);
+  document.getElementById('hng-nm').textContent = name;
+  setAvImg('hng-typ-av', 'hng-typ-av-i', ini, avatarUrl);
+
+  // Control panel avatar
+  const ac = document.getElementById('av-ctrl');
+  const aInit = document.getElementById('av-init');
+  aInit.textContent = ini;
+  let cimg = ac.querySelector('img');
+  if (avatarUrl) {
+    aInit.style.display = 'none';
+    if (!cimg) { cimg = document.createElement('img'); cimg.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;'; ac.appendChild(cimg); }
+    cimg.src = avatarUrl;
+  } else {
+    aInit.style.display = '';
+    if (cimg) cimg.remove();
+  }
+
+  // Status bar icon colors
+  const ic = isDark ? '#fff' : '#000';
+  document.querySelectorAll('#ism-sig rect').forEach(r=>r.setAttribute('fill',ic));
+  document.querySelectorAll('#ism-wif path').forEach(r=>r.setAttribute('stroke',ic));
+  document.querySelectorAll('#ism-wif circle').forEach(r=>r.setAttribute('fill',ic));
+  document.querySelectorAll('#ism-bat rect').forEach(r=>{
+    r.getAttribute('stroke')?r.setAttribute('stroke',ic):r.setAttribute('fill',ic);
+  });
+
+  // Instagram
+  const uname = document.getElementById('c-user').value || 'Active now';
+  document.getElementById('ig-t').textContent = t;
+  document.getElementById('ig-bf').setAttribute('width', fw);
+  document.getElementById('ig-nm').textContent = name;
+  document.getElementById('ig-sub').textContent = uname;
+  setAvImg('ig-av', 'ig-av-i', ini, avatarUrl);
+  setAvImg('ig-typ-av', 'ig-typ-av-i', ini, avatarUrl);
+
+  renderAll();
+}
+
+function toggleDark() {
+  isDark = !isDark;
+  document.getElementById('dk-tog').classList.toggle('on', isDark);
+  document.getElementById('ip').classList.toggle('dk', isDark);
+  updateUI();
+}
+
+function setBubble(b) {
+  bubble = b;
+  document.getElementById('bb-bl').className = 'bb' + (b==='b'?' ab':'');
+  document.getElementById('bb-gr').className = 'bb' + (b==='g'?' ag':'');
+  renderAll();
+}
+
+function setSender(s) {
+  sender = s;
+  document.getElementById('sb-you').classList.toggle('on', s==='y');
+  document.getElementById('sb-her').classList.toggle('on', s==='h');
+}
+
+function setReceipt(r) {
+  receipt = r;
+  ['n','d','r'].forEach(v=>document.getElementById('rb-'+v).classList.toggle('on',v===r));
+}
+
+function toggleTyping() {
+  typing = !typing;
+  document.getElementById('typ-tog').classList.toggle('on', typing);
+  renderAll();
+}
+
+function addMsg() {
+  const txt = document.getElementById('msg-input').value.trim();
+  if (!txt) return;
+  const ts = document.getElementById('ts-in').value.trim();
+  msgs.push({ id:++mid, txt, sender, receipt: sender==='y'?receipt:'n', ts: ts||null });
+  document.getElementById('msg-input').value = '';
+  document.getElementById('ts-in').value = '';
+  setReceipt('n');
+  renderAll();
+}
+
+function delMsg(id) {
+  msgs = msgs.filter(m=>m.id!==id);
+  renderAll();
+}
+
+function renderMsgList() {
+  const list = document.getElementById('msg-list');
+  document.getElementById('mc').textContent = msgs.length;
+  list.innerHTML = '';
+  msgs.forEach(m=>{
+    const d = document.createElement('div');
+    d.className = 'mli';
+    d.innerHTML = `<span class="mli-w ${m.sender}">${m.sender==='y'?'YOU':'HER'}</span><span class="mli-t">${m.txt}</span><button class="mli-x" onclick="delMsg(${m.id})">✕</button>`;
+    list.appendChild(d);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+function renderAll() {
+  renderIMsg();
+  renderHinge();
+  renderIG();
+  renderMsgList();
+  document.getElementById('ism-typing').style.display = (typing && plat==='i') ? 'block' : 'none';
+  document.getElementById('hng-typing').style.display = (typing && plat==='h') ? 'block' : 'none';
+  document.getElementById('ig-typing').style.display = (typing && plat==='ig') ? 'block' : 'none';
+}
+
+function renderIMsg() {
+  const c = document.getElementById('ism-msgs');
+  // Save typing indicator before clearing
+  const typEl = document.getElementById('ism-typing');
+  c.innerHTML = '';
+  msgs.forEach((m,i)=>{
+    const nxt = msgs[i+1];
+    const isLast = !nxt || nxt.sender!==m.sender || nxt.ts;
+    if (m.ts) {
+      const d=document.createElement('div'); d.className='ism-ts'; d.textContent=m.ts; c.appendChild(d);
+    }
+    const row=document.createElement('div');
+    row.className='ism-row '+(m.sender==='y'?'s':'r');
+    row.dataset.msgId=m.id;
+    const b=document.createElement('div');
+    const bc = m.sender==='y' ? (bubble==='b'?'sb':'sg') : 'rb';
+    b.className='ism-b '+bc+(isLast?'':' g');
+    b.textContent=m.txt;
+    row.appendChild(b);
+    if (m.sender==='y' && m.receipt!=='n') {
+      const rc=document.createElement('div'); rc.className='ism-rc';
+      rc.textContent=m.receipt==='d'?'Delivered':'Read';
+      row.appendChild(rc);
+    }
+    c.appendChild(row);
+  });
+  // Re-append typing indicator at end
+  c.appendChild(typEl);
+  c.scrollTop=c.scrollHeight;
+}
+
+function renderHinge() {
+  const c = document.getElementById('hng-msgs');
+  // Save typing indicator before clearing
+  const typEl = document.getElementById('hng-typing');
+  c.innerHTML = '';
+  const name = document.getElementById('c-nm').value || 'Contact';
+  const ini = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  msgs.forEach((m,i)=>{
+    const nxt = msgs[i+1];
+    const isLast = !nxt || nxt.sender!==m.sender || nxt.ts;
+
+    if (m.ts) {
+      const d=document.createElement('div'); d.className='hng-ts'; d.textContent=m.ts; c.appendChild(d);
+    }
+
+    const row=document.createElement('div');
+    row.className='hng-row '+(m.sender==='y'?'s':'r');
+    row.dataset.msgId=m.id;
+
+    if (m.sender==='h') {
+      const wrap=document.createElement('div'); wrap.className='hng-recv-wrap';
+      const av=document.createElement('div');
+      av.className='hng-rav'+(isLast?'':' hid');
+      if (avatarUrl) {
+        const img=document.createElement('img');
+        img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;';
+        img.src=avatarUrl; av.appendChild(img);
+      } else { av.textContent=ini; }
+      const b=document.createElement('div');
+      b.className='hng-b r'+(isLast?'':' g');
+      b.textContent=m.txt;
+      wrap.appendChild(av); wrap.appendChild(b);
+      row.appendChild(wrap);
+    } else {
+      const b=document.createElement('div');
+      b.className='hng-b s'+(isLast?'':' g');
+      b.textContent=m.txt;
+      row.appendChild(b);
+    }
+    c.appendChild(row);
+  });
+  // Re-append typing indicator at end
+  c.appendChild(typEl);
+  c.scrollTop=c.scrollHeight;
+}
+
+function renderIG() {
+  const c = document.getElementById('ig-msgs');
+  const typEl = document.getElementById('ig-typing');
+  c.innerHTML = '';
+  const name = document.getElementById('c-nm').value || 'Contact';
+  const ini = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  msgs.forEach((m,i)=>{
+    const nxt = msgs[i+1];
+    const isLast = !nxt || nxt.sender!==m.sender || nxt.ts;
+
+    if (m.ts) {
+      const d=document.createElement('div'); d.className='ig-ts'; d.textContent=m.ts; c.appendChild(d);
+    }
+
+    const row=document.createElement('div');
+    row.className='ig-row '+(m.sender==='y'?'s':'r');
+    row.dataset.msgId=m.id;
+
+    if (m.sender==='h') {
+      const wrap=document.createElement('div'); wrap.className='ig-recv-wrap';
+      const av=document.createElement('div');
+      av.className='ig-rav'+(isLast?'':' hid');
+      if (avatarUrl) {
+        const img=document.createElement('img');
+        img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;';
+        img.src=avatarUrl; av.appendChild(img);
+      } else { av.textContent=ini; }
+      const b=document.createElement('div');
+      b.className='ig-b r'+(isLast?'':' g');
+      b.textContent=m.txt;
+      wrap.appendChild(av); wrap.appendChild(b);
+      row.appendChild(wrap);
+    } else {
+      const b=document.createElement('div');
+      b.className='ig-b s'+(isLast?'':' g');
+      b.textContent=m.txt;
+      row.appendChild(b);
+      if (m.receipt!=='n') {
+        const rc=document.createElement('div'); rc.className='ig-rc';
+        rc.textContent=m.receipt==='r'?'Seen':'Sent';
+        row.appendChild(rc);
+      }
+    }
+    c.appendChild(row);
+  });
+  c.appendChild(typEl);
+  c.scrollTop=c.scrollHeight;
+}
+
+async function exportFull() {
+  const elId = plat==='i'?'ip': plat==='h'?'hp':'igp';
+  const el = document.getElementById(elId);
+  const ov=el.style.overflow, h=el.style.height;
+  el.style.overflow='visible'; el.style.height='auto';
+  const bg = plat==='i'?(isDark?'#000':'#fff'): plat==='h'?'#f5f5f5':'#fff';
+  const cv=await html2canvas(el,{scale:3,useCORS:true,logging:false,backgroundColor:bg});
+  el.style.overflow=ov; el.style.height=h;
+  dl(cv, plat+'-chat.png');
+}
+
+async function exportRange() {
+  const from=parseInt(document.getElementById('rf').value)||1;
+  const to=parseInt(document.getElementById('rt').value)||msgs.length;
+  const ids=msgs.slice(from-1,to).map(m=>m.id);
+  const bg = plat==='i'?(isDark?'#000':'#fff'): plat==='h'?'#f5f5f5':'#fff';
+  const tmp=document.createElement('div');
+  tmp.style.cssText=`width:390px;background:${bg};padding:8px 0;position:fixed;top:-9999px;left:-9999px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;`;
+  document.body.appendChild(tmp);
+  const srcId = plat==='i'?'ism-msgs': plat==='h'?'hng-msgs':'ig-msgs';
+  const src=document.getElementById(srcId);
+  ids.forEach(id=>{
+    const el=src.querySelector(`[data-msg-id="${id}"]`);
+    if(el) tmp.appendChild(el.cloneNode(true));
+  });
+  const cv=await html2canvas(tmp,{scale:3,useCORS:true,logging:false,backgroundColor:bg});
+  document.body.removeChild(tmp);
+  dl(cv,plat+'-range.png');
+}
+
+function dl(cv,name){const a=document.createElement('a');a.download=name;a.href=cv.toDataURL('image/png');a.click();}
+function clearAll(){if(!confirm('Clear all?'))return;msgs=[];mid=0;renderAll();}
+
+updateUI();
+document.getElementById('msg-input').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')addMsg();});
+</script>
+
+</div><!-- end main-content -->
+</body>
+</html>

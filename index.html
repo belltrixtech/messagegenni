@@ -290,6 +290,8 @@ body {
 .ism-row { display: flex; flex-direction: column; width: 100%; margin-bottom: 1px; }
 .ism-row.s { align-items: flex-end; padding: 0 8px 0 70px; }
 .ism-row.r { align-items: flex-start; padding: 0 70px 0 8px; }
+.ism-row.s + .ism-row.r,
+.ism-row.r + .ism-row.s { margin-top: 8px; }
 .ism-b {
   max-width: 100%; padding: 10px 14px; font-size: 17px; line-height: 1.35;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif; word-break: break-word;

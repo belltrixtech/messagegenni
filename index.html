@@ -561,6 +561,7 @@ body {
     <h3>Status Bar</h3>
     <div class="cr"><label>Time</label><input type="text" id="sb-t" value="9:41" maxlength="5" oninput="updateUI()"></div>
     <div class="cr"><label>Battery %</label><input type="number" id="sb-b" value="80" min="0" max="100" oninput="updateUI()"></div>
+    <div class="cr" id="back-num-row"><label>Back #</label><input type="number" id="sb-back" value="5" min="1" max="99" oninput="updateUI()"></div>
   </div>
 
   <div class="panel">
@@ -574,6 +575,10 @@ body {
       </div>
       <input type="file" id="av-file" accept="image/*" onchange="handleAvatar(event)">
       <div class="av-info">Click to upload<br>contact photo</div>
+    </div>
+    <div class="cr">
+      <label>Avatar Color</label>
+      <input type="color" id="av-color" value="#7b6aa8" oninput="updateAvatarColor()" style="width:40px;height:28px;padding:2px;border-radius:6px;border:1px solid #303030;background:#252525;cursor:pointer;">
     </div>
     <div id="imsg-extras">
       <div class="tog-row">
@@ -672,7 +677,7 @@ body {
           <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
             <path d="M7.5 1.5L1.5 7.5L7.5 13.5" stroke="#007AFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <div class="ism-back-num">5</div>
+          <div class="ism-back-num" id="ism-back-num">5</div>
         </div>
       </div>
       <!-- Center: avatar + name -->
@@ -907,6 +912,7 @@ function setPlatform(p) {
   document.getElementById('pt-ig').className = 'ptab' + (p==='ig' ? ' aig' : '');
   document.getElementById('imsg-extras').style.display = p==='i' ? 'block' : 'none';
   document.getElementById('rcpt-wrap').style.display = p==='i' ? 'block' : 'none';
+  document.getElementById('back-num-row').style.display = p==='i' ? 'flex' : 'none';
   document.getElementById('ig-username-row').style.display = p==='ig' ? 'flex' : 'none';
   document.getElementById('add-btn').className = 'add-btn' + (p==='h' ? ' hn' : '');
   document.getElementById('exp-full').className = 'exp-btn' + (p==='h' ? ' hn' : '');
@@ -954,6 +960,8 @@ function updateUI() {
   document.getElementById('ism-t').textContent = t;
   document.getElementById('ism-bf').setAttribute('width', fw);
   document.getElementById('ism-nm').textContent = name;
+  const backNum = document.getElementById('sb-back').value || '5';
+  document.getElementById('ism-back-num').textContent = backNum;
   setAvImg('ism-av', 'ism-av-i', ini, avatarUrl);
 
   // Hinge
@@ -995,9 +1003,22 @@ function updateUI() {
   setAvImg('ig-typ-av', 'ig-typ-av-i', ini, avatarUrl);
 
   renderAll();
+  updateAvatarColor();
 }
 
-function toggleDark() {
+function updateAvatarColor() {
+  const color = document.getElementById('av-color').value;
+  // Update all avatar backgrounds (only when no photo uploaded)
+  if (!avatarUrl) {
+    const avEls = ['av-ctrl','ism-av','hng-typ-av','ig-av','ig-typ-av'];
+    avEls.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.background = color;
+    });
+    // Hinge received avatars are dynamically rendered, handled in renderHinge/renderIG
+  }
+}
+
   isDark = !isDark;
   document.getElementById('dk-tog').classList.toggle('on', isDark);
   document.getElementById('ip').classList.toggle('dk', isDark);
@@ -1122,6 +1143,7 @@ function renderHinge() {
       const wrap=document.createElement('div'); wrap.className='hng-recv-wrap';
       const av=document.createElement('div');
       av.className='hng-rav'+(isLast?'':' hid');
+      av.style.background = avatarUrl ? '' : (document.getElementById('av-color').value || '#7b6aa8');
       if (avatarUrl) {
         const img=document.createElement('img');
         img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;';
@@ -1168,6 +1190,7 @@ function renderIG() {
       const wrap=document.createElement('div'); wrap.className='ig-recv-wrap';
       const av=document.createElement('div');
       av.className='ig-rav'+(isLast?'':' hid');
+      av.style.background = avatarUrl ? '' : (document.getElementById('av-color').value || '#7b6aa8');
       if (avatarUrl) {
         const img=document.createElement('img');
         img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;';
